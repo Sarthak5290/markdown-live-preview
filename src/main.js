@@ -5,6 +5,7 @@ import DOMPurify from 'dompurify';
 import mermaid from 'mermaid';
 import { highlightCode } from './syntax-highlight.js';
 import { detectJson } from './json-preview.js';
+import { setupPreviewSearch } from './preview-search.js';
 
 const init = () => {
     let hasEdited = false;
@@ -279,6 +280,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     };
 
     let renderer = createMarkedRenderer();
+    let previewSearch = null;
 
     // Render markdown text as html
     let convert = (markdown) => {
@@ -294,6 +296,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         let sanitized = DOMPurify.sanitize(html);
         document.querySelector('#output').innerHTML = sanitized;
         scheduleMermaidRender();
+        previewSearch?.refresh();
     };
 
     // Reset input text
@@ -504,6 +507,20 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         });
     };
 
+    let setupEditorSearchButton = (editor) => {
+        const button = document.querySelector('#editor-search-button');
+        button.addEventListener('click', () => {
+            editor.focus();
+            editor.getAction('actions.find')?.run();
+        });
+
+        // Monaco's search box opens in the same corner, so hide the button while it is open.
+        const findState = editor.getContribution('editor.contrib.findController')?.getState?.();
+        findState?.onFindReplaceStateChange(() => {
+            button.hidden = findState.isRevealed;
+        });
+    };
+
     let setupResetButton = () => {
         document.querySelector("#reset-button").addEventListener('click', (event) => {
             event.preventDefault();
@@ -671,6 +688,11 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         presetValue(defaultInput);
     }
     setupOpenButton();
+    setupEditorSearchButton(editor);
+    previewSearch = setupPreviewSearch({
+        output: document.querySelector('#output'),
+        scroller: document.querySelector('#preview')
+    });
     setupResetButton();
     setupCopyButton(editor);
     setupExportButton();
