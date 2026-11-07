@@ -722,3 +722,33 @@ footer {
   border-color: #57ab5a;
   color: #57ab5a;
 }
+
+/* View modes: editor only / both / preview only (sidebar icons) */
+#view-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#view-modes .menu-icon[aria-pressed="true"] {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Screen only, so Export PDF always prints the preview. */
+@media screen {
+  #container.view-editor #preview,
+  #container.view-editor #split-divider,
+  #container.view-preview #edit,
+  #container.view-preview #split-divider {
+    display: none;
+  }
+
+  /* !important beats the pixel widths the divider's drag code sets on the panes. */
+  #container.view-editor #edit,
+  #container.view-preview #preview {
+    width: 100% !important;
+  }
+}

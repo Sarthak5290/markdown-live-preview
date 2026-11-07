@@ -15,6 +15,7 @@ const init = () => {
     const localStorageKey = 'last_state';
     const localStorageScrollBarKey = 'scroll_bar_settings';
     const localStorageThemeKey = 'theme_settings';
+    const localStorageViewModeKey = 'view_mode';
     const confirmationMessage = 'Are you sure you want to reset? Your changes will be lost.';
     let mermaidRenderTimer = null;
     let mermaidRenderVersion = 0;
@@ -366,6 +367,29 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         });
     };
 
+    // ----- view mode (editor only / both / preview only) -----
+
+    let initViewMode = (mode) => {
+        const container = document.querySelector('#container');
+        const buttons = document.querySelectorAll('#view-modes [data-view]');
+
+        let applyViewMode = (next) => {
+            container.classList.remove('view-editor', 'view-split', 'view-preview');
+            container.classList.add(`view-${next}`);
+            buttons.forEach((button) => {
+                button.setAttribute('aria-pressed', String(button.dataset.view === next));
+            });
+        };
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                applyViewMode(button.dataset.view);
+                saveViewMode(button.dataset.view);
+            });
+        });
+        applyViewMode(mode);
+    };
+
     // ----- preview CSS loader (switch github-markdown css) -----
     const PREVIEW_CSS_LIGHT = 'css/github-markdown-light.css?v=a1a198514565';
     const PREVIEW_CSS_DARK = 'css/github-markdown-dark_dimmed.css?v=5d3f5d9d207c';
@@ -640,6 +664,16 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         Storehouse.setItem(localStorageNamespace, localStorageScrollBarKey, settings, expiredAt);
     };
 
+    let loadViewMode = () => {
+        let mode = Storehouse.getItem(localStorageNamespace, localStorageViewModeKey);
+        return mode === 'editor' || mode === 'preview' ? mode : 'split';
+    };
+
+    let saveViewMode = (mode) => {
+        let expiredAt = new Date(2099, 1, 1);
+        Storehouse.setItem(localStorageNamespace, localStorageViewModeKey, mode, expiredAt);
+    };
+
     let saveThemeSettings = (settings) => {
         let expiredAt = new Date(2099, 1, 1);
         Storehouse.setItem(localStorageNamespace, localStorageThemeKey, settings, expiredAt);
@@ -746,6 +780,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     let scrollBarSettings = loadScrollBarSettings() || false;
     initScrollBarSync(scrollBarSettings);
+    initViewMode(loadViewMode());
 
     // initialize theme (dark/light)
     let themeSettings = loadThemeSettings();

@@ -30,7 +30,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" type="text/css" href="css/style.css?v=cb1519aca6fd">
+    <link rel="stylesheet" type="text/css" href="css/style.css?v=7d21746746ab">
     <link rel="icon" type="image/png" href="favicon.png">
     <script type="module" src="/src/main.js?v=1.13.0"></script>
     <title>Markdown Live Preview</title>
@@ -66,6 +66,17 @@
                 <a href="#" class="menu-icon" title="Reset" aria-label="Reset">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                 </a>
+            </div>
+            <div id="view-modes" role="group" aria-label="View">
+                <button type="button" class="menu-icon" data-view="editor" title="Editor only" aria-label="Editor only" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </button>
+                <button type="button" class="menu-icon" data-view="split" title="Editor and preview" aria-label="Editor and preview" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+                </button>
+                <button type="button" class="menu-icon" data-view="preview" title="Preview only" aria-label="Preview only" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
             </div>
             <div id="sync-button" class="menu-toggle">
                 <input type="checkbox" id="sync-scroll-checkbox" class="visually-hidden">
