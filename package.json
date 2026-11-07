@@ -1,8 +1,8 @@
 {
   "name": "markdown-live-preview",
   "version": "1.0.0",
-  "description": "[Markdown Live Preview](https://markdownlivepreview.com/) is a tiny web tool to preview Markdown formatted text.",
-  "main": "index.js",
+  "description": "Markdown and JSON editor with live preview: code highlighting, search, outline, share links, offline support and a responsive layout.",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "update:css-version": "node scripts/update-css-version.mjs",
@@ -16,9 +16,15 @@
     "type": "git",
     "url": "git+https://github.com/tanabe/markdown-live-preview.git"
   },
-  "keywords": [],
+  "keywords": [
+    "markdown",
+    "editor",
+    "preview",
+    "json",
+    "mermaid"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/tanabe/markdown-live-preview/issues"
   },
@@ -30,7 +36,6 @@
   },
   "dependencies": {
     "dompurify": "^3.4.17",
-    "github-markdown-css": "^5.8.1",
     "highlight.js": "^11.12.0",
     "marked": "^15.0.7",
     "mermaid": "^11.16.1",

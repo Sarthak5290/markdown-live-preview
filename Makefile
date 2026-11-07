@@ -26,6 +26,3 @@ serve-dist:
 build-serve:
 	npm run build-and-serve
 
-.PHONY: deploy
-deploy:
-	firebase deploy

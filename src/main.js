@@ -502,14 +502,6 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         });
     };
 
-    let enableScrollBarSync = () => {
-        scrollBarSync = true;
-    };
-
-    let disableScrollBarSync = () => {
-        scrollBarSync = false;
-    };
-
     // ----- clipboard utils -----
 
     let copyToClipboard = (text, successHandler, errorHandler) => {
