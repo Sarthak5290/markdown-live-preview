@@ -25,7 +25,8 @@
   "homepage": "https://github.com/tanabe/markdown-live-preview#readme",
   "devDependencies": {
     "http-server": "^14.1.1",
-    "vite": "^6.4.5"
+    "vite": "^6.4.5",
+    "vite-plugin-pwa": "^2.0.0"
   },
   "dependencies": {
     "dompurify": "^3.4.17",

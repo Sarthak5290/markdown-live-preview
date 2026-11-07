@@ -1,0 +1,7 @@
+# Cloudflare Pages: always check for a new service worker and manifest,
+# so a new version is noticed promptly.
+/sw.js
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Cache-Control: no-cache

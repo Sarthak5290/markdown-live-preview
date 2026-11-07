@@ -8,6 +8,7 @@ import { detectJson } from './json-preview.js';
 import { setupPreviewSearch } from './preview-search.js';
 import { setupOutline } from './outline.js';
 import { SHARE_PREFIX, LONG_LINK, MAX_LINK, encodeShare, decodeShare } from './share.js';
+import { registerSW } from 'virtual:pwa-register';
 
 const init = () => {
     let hasEdited = false;
@@ -980,6 +981,20 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     openSharedLink();
     window.addEventListener('hashchange', openSharedLink);
+
+    // Offline support (production builds only). A new version waits for the user
+    // to reload; the text is saved on every edit, so reloading loses nothing.
+    const updateServiceWorker = registerSW({
+        onNeedRefresh() {
+            showNotice('A new version is available.', [
+                { label: 'Reload', onClick: () => updateServiceWorker(true) },
+                { label: 'Later', onClick: () => {} }
+            ]);
+        },
+        onOfflineReady() {
+            showNotice('Ready to work offline.');
+        }
+    });
 };
 
 window.addEventListener("load", () => {
