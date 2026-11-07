@@ -341,9 +341,10 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     // Render markdown text as html
     let convert = (markdown) => {
+        // marked.lexer/parser use these options as given (unlike marked.parse, which
+        // merges them), so start from the defaults to keep GFM tables, task lists, etc.
         let options = {
-            headerIds: false,
-            mangle: false,
+            ...marked.defaults,
             renderer
         };
         // A document that is entirely JSON (such as an opened .json file) skips

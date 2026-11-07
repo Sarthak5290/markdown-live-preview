@@ -7,6 +7,10 @@ export const setupOutline = ({ panel, toggle, output, preview, editorPane, edito
     let headings = [];
     let items = [];
     let frame = null;
+    // The heading last clicked stays highlighted until the user scrolls, because
+    // headings near the end of a document cannot scroll all the way to the top.
+    let pinned = null;
+    let pinnedAt = 0;
 
     // Marks the last heading that has scrolled past the top of the preview.
     const highlightCurrent = () => {
@@ -17,7 +21,9 @@ export const setupOutline = ({ panel, toggle, output, preview, editorPane, edito
         let current = -1;
         const scrolledToEnd = preview.scrollTop > 0
             && preview.scrollTop + preview.clientHeight >= preview.scrollHeight - 2;
-        if (isShown(preview) && scrolledToEnd) {
+        if (pinned !== null) {
+            current = pinned;
+        } else if (isShown(preview) && scrolledToEnd) {
             // A short last section can never reach the top, so the end counts as it.
             current = headings.length - 1;
         } else if (isShown(preview)) {
@@ -30,9 +36,25 @@ export const setupOutline = ({ panel, toggle, output, preview, editorPane, edito
         items.forEach((item, i) => item.classList.toggle('current', i === current));
     };
 
+    const scheduleHighlight = () => {
+        if (frame === null) {
+            frame = requestAnimationFrame(highlightCurrent);
+        }
+    };
+
+    const unpin = () => {
+        if (pinned !== null) {
+            pinned = null;
+            scheduleHighlight();
+        }
+    };
+
     const jumpTo = (index) => {
         const heading = headings[index];
         const line = Number(heading.dataset.sourceLine);
+        pinned = index;
+        pinnedAt = performance.now();
+        highlightCurrent();
         if (isShown(editorPane)) {
             editor.revealLineNearTop(line);
             editor.setPosition({ lineNumber: line, column: 1 });
@@ -52,6 +74,9 @@ export const setupOutline = ({ panel, toggle, output, preview, editorPane, edito
             return;
         }
         headings = [...output.querySelectorAll('[data-source-line]')];
+        if (pinned !== null && pinned >= headings.length) {
+            pinned = null;
+        }
         if (headings.length === 0) {
             const empty = document.createElement('p');
             empty.className = 'outline-empty';
@@ -91,9 +116,16 @@ export const setupOutline = ({ panel, toggle, output, preview, editorPane, edito
         setOpen(false);
         onOpenChange(false);
     });
-    preview.addEventListener('scroll', () => {
-        if (frame === null) {
-            frame = requestAnimationFrame(highlightCurrent);
+    preview.addEventListener('scroll', scheduleHighlight);
+
+    // The user scrolling the preview (or the editor, which Sync scroll follows)
+    // releases the clicked heading. The editor scroll caused by the jump itself is ignored.
+    for (const type of ['wheel', 'touchmove', 'keydown', 'pointerdown']) {
+        preview.addEventListener(type, unpin, { passive: true });
+    }
+    editor.onDidScrollChange(() => {
+        if (performance.now() - pinnedAt > 500) {
+            unpin();
         }
     });
 
