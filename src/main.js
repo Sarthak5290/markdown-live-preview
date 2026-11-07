@@ -2,7 +2,6 @@ import Storehouse from 'storehouse-js';
 import * as monaco from 'monaco-editor';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import mermaid from 'mermaid';
 import { highlightCode } from './syntax-highlight.js';
 import { detectJson } from './lib/json-preview.js';
 import { escapeHtml } from './lib/html.js';
@@ -246,7 +245,14 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         return renderer;
     };
 
-    let configureMermaid = (theme) => {
+    // Mermaid is about 1 MB, so it is only downloaded once a document has a diagram.
+    let mermaidLoader = null;
+    let loadMermaid = () => {
+        mermaidLoader ??= import('mermaid').then((module) => module.default);
+        return mermaidLoader;
+    };
+
+    let configureMermaid = (mermaid, theme) => {
         mermaid.initialize({
             startOnLoad: false,
             securityLevel: 'strict',
@@ -272,9 +278,25 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         }
 
         const version = ++mermaidRenderVersion;
-        configureMermaid(theme);
-
         const elements = Array.from(outputElement.querySelectorAll('.mermaid'));
+        if (elements.length === 0) {
+            return;
+        }
+
+        let mermaid;
+        try {
+            mermaid = await loadMermaid();
+        } catch (error) {
+            // Try again next time (for example after a network problem).
+            mermaidLoader = null;
+            elements.forEach((element) => showMermaidError(element, error));
+            return;
+        }
+        if (version !== mermaidRenderVersion) {
+            return;
+        }
+        configureMermaid(mermaid, theme);
+
         for (const [index, element] of elements.entries()) {
             if (version !== mermaidRenderVersion) {
                 return;
