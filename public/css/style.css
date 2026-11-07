@@ -13,7 +13,8 @@ html, body {
 /* Sidebar on the left (full height); editor, preview and footer on the right. */
 body {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
+  /* Sidebar, outline panel (collapses to nothing while hidden), editor + preview. */
+  grid-template-columns: 48px auto minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
   height: 100vh;
 }
@@ -42,6 +43,7 @@ img {
 
 /* Icon-only sidebar: one column of icons, each with a tooltip (title). */
 header {
+  grid-column: 1;
   grid-row: 1 / -1;
   padding: 8px 0;
   overflow-y: auto;
@@ -141,6 +143,7 @@ header a.menu-icon:visited {
 }
 
 footer {
+  grid-column: 3;
   padding: 8px;
   bottom: 0;
   left: 0;
@@ -153,6 +156,7 @@ footer {
 }
 
 #container {
+  grid-column: 3;
   flex-grow: 1;
   overflow: hidden;
   width: 100%;
@@ -233,6 +237,7 @@ footer {
   #edit,
   #split-divider,
   #preview-search-anchor,
+  #outline-panel,
   .code-copy-button {
     display: none !important;
   }
@@ -751,4 +756,108 @@ footer {
   #container.view-preview #preview {
     width: 100% !important;
   }
+}
+
+/* Outline panel: headings list between the sidebar and the editor */
+#outline-panel {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  min-height: 0;
+  border-right: 1px solid #d0d7de;
+  background: #f6f8fa;
+  color: #24292f;
+  font-size: 13px;
+}
+
+#outline-panel[hidden] {
+  display: none;
+}
+
+.outline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 12px;
+  border-bottom: 1px solid #d0d7de;
+  font-weight: bold;
+}
+
+.outline-header button {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.outline-header button:hover {
+  background: rgba(175, 184, 193, 0.25);
+}
+
+#outline-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.outline-item {
+  display: block;
+  width: 100%;
+  padding: 4px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.outline-item:hover {
+  background: #eaeef2;
+}
+
+.outline-item.current {
+  background: #ddf4ff;
+  color: #0969da;
+  font-weight: 600;
+}
+
+#outline-list .outline-empty {
+  margin: 12px;
+  color: #57606a;
+}
+
+#outline-button[aria-pressed="true"] {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+[data-theme="dark"] #outline-panel {
+  border-color: #444c56;
+  background: #2d333b;
+  color: #adbac7;
+}
+
+[data-theme="dark"] .outline-header {
+  border-color: #444c56;
+}
+
+[data-theme="dark"] .outline-item:hover {
+  background: #373e47;
+}
+
+[data-theme="dark"] .outline-item.current {
+  background: rgba(65, 132, 228, 0.18);
+  color: #539bf5;
+}
+
+[data-theme="dark"] #outline-list .outline-empty {
+  color: #768390;
 }

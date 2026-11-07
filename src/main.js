@@ -6,6 +6,7 @@ import mermaid from 'mermaid';
 import { highlightCode } from './syntax-highlight.js';
 import { detectJson } from './json-preview.js';
 import { setupPreviewSearch } from './preview-search.js';
+import { setupOutline } from './outline.js';
 
 const init = () => {
     let hasEdited = false;
@@ -16,6 +17,7 @@ const init = () => {
     const localStorageScrollBarKey = 'scroll_bar_settings';
     const localStorageThemeKey = 'theme_settings';
     const localStorageViewModeKey = 'view_mode';
+    const localStorageOutlineKey = 'outline_open';
     const confirmationMessage = 'Are you sure you want to reset? Your changes will be lost.';
     let mermaidRenderTimer = null;
     let mermaidRenderVersion = 0;
@@ -213,6 +215,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         const renderer = new marked.Renderer();
         const renderCode = renderer.code.bind(renderer);
         const renderParagraph = renderer.paragraph.bind(renderer);
+        const renderHeading = renderer.heading.bind(renderer);
 
         renderer.code = (token) => {
             const lang = (token.lang || '').match(/^\S*/)?.[0].toLowerCase();
@@ -229,6 +232,14 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             const alreadyEscaped = token.tokens?.length === 1 && token.tokens[0].escaped;
             const json = alreadyEscaped ? null : detectJson(token.text);
             return json ? renderJsonBlock(json) : renderParagraph(token);
+        };
+
+        // Top-level headings carry their editor line so the outline can jump to them.
+        renderer.heading = (token) => {
+            const html = renderHeading(token);
+            return token.sourceLine
+                ? html.replace(/^<h([1-6])>/, `<h$1 data-source-line="${token.sourceLine}">`)
+                : html;
         };
 
         return renderer;
@@ -310,6 +321,23 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     let renderer = createMarkedRenderer();
     let previewSearch = null;
+    let outline = null;
+
+    // Saves each top-level heading's line number on its token. Tokens are found
+    // in order in the source, which also skips text marked drops (link definitions).
+    let markHeadingLines = (source, tokens) => {
+        let cursor = 0;
+        for (const token of tokens) {
+            const at = source.indexOf(token.raw, cursor);
+            if (at === -1) {
+                continue;
+            }
+            cursor = at + token.raw.length;
+            if (token.type === 'heading') {
+                token.sourceLine = source.slice(0, at).split('\n').length;
+            }
+        }
+    };
 
     // Render markdown text as html
     let convert = (markdown) => {
@@ -321,7 +349,16 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         // A document that is entirely JSON (such as an opened .json file) skips
         // Markdown parsing, so blank lines or indentation inside it still work.
         let json = detectJson(markdown);
-        let html = json ? renderJsonBlock(json) : marked.parse(markdown, options);
+        let html;
+        if (json) {
+            html = renderJsonBlock(json);
+        } else {
+            // Same as marked.parse, split in two so heading lines can be added in between.
+            let source = markdown.replace(/\r\n?/g, '\n');
+            let tokens = marked.lexer(source, options);
+            markHeadingLines(source, tokens);
+            html = marked.parser(tokens, options);
+        }
         let sanitized = DOMPurify.sanitize(html);
         let output = document.querySelector('#output');
         output.innerHTML = sanitized;
@@ -329,6 +366,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         openLinksInNewTab(output);
         scheduleMermaidRender();
         previewSearch?.refresh();
+        outline?.refresh();
     };
 
     // Reset input text
@@ -674,6 +712,15 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         Storehouse.setItem(localStorageNamespace, localStorageViewModeKey, mode, expiredAt);
     };
 
+    let loadOutlineOpen = () => {
+        return Storehouse.getItem(localStorageNamespace, localStorageOutlineKey) === true;
+    };
+
+    let saveOutlineOpen = (open) => {
+        let expiredAt = new Date(2099, 1, 1);
+        Storehouse.setItem(localStorageNamespace, localStorageOutlineKey, open, expiredAt);
+    };
+
     let saveThemeSettings = (settings) => {
         let expiredAt = new Date(2099, 1, 1);
         Storehouse.setItem(localStorageNamespace, localStorageThemeKey, settings, expiredAt);
@@ -772,6 +819,20 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     previewSearch = setupPreviewSearch({
         output: document.querySelector('#output'),
         scroller: document.querySelector('#preview')
+    });
+    outline = setupOutline({
+        panel: document.querySelector('#outline-panel'),
+        toggle: document.querySelector('#outline-button'),
+        output: document.querySelector('#output'),
+        preview: document.querySelector('#preview'),
+        editorPane: document.querySelector('#edit'),
+        editor,
+        initiallyOpen: loadOutlineOpen(),
+        onOpenChange: (open) => {
+            saveOutlineOpen(open);
+            // The panel changes the panes' space; the divider recalculates on resize.
+            window.dispatchEvent(new Event('resize'));
+        }
     });
     setupResetButton();
     setupCopyButton(editor);
