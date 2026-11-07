@@ -967,6 +967,17 @@ footer {
 }
 
 /* The backdrop only exists for the drawer on smaller screens. */
+/* The search icon is for phones, tablets and touch screens, which have no Ctrl+F. */
+.touch-only {
+  display: none;
+}
+
+@media (max-width: 1199px), (pointer: coarse) {
+  .touch-only {
+    display: block;
+  }
+}
+
 #outline-backdrop {
   display: none;
 }
@@ -1042,7 +1053,8 @@ footer {
     order: 1;
   }
 
-  #menu-items > #outline-toggle {
+  #menu-items > #outline-toggle,
+  #menu-items > #search-toggle {
     order: 2;
   }
 

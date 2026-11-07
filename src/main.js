@@ -720,6 +720,19 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         });
     };
 
+    // Search icon for phones and tablets (no Ctrl+F): searches the preview when it
+    // is showing, otherwise opens the editor's own search box.
+    let setupSearchButton = (editor) => {
+        document.querySelector('#search-button').addEventListener('click', () => {
+            if (getComputedStyle(document.querySelector('#preview')).display !== 'none') {
+                previewSearch.open();
+            } else {
+                editor.focus();
+                editor.getAction('actions.find')?.run();
+            }
+        });
+    };
+
     let setupResetButton = () => {
         document.querySelector("#reset-button").addEventListener('click', (event) => {
             event.preventDefault();
@@ -989,6 +1002,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             window.dispatchEvent(new Event('resize'));
         }
     });
+    setupSearchButton(editor);
     setupResetButton();
     setupCopyButton(editor);
     setupCodeCopyButtons();

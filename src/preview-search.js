@@ -237,6 +237,8 @@ export const setupPreviewSearch = ({ output, scroller }) => {
             if (!box.hidden) {
                 search({ keepPosition: true, scroll: false });
             }
-        }
+        },
+        // For the search icon on touch screens, which have no Ctrl+F.
+        open
     };
 };
