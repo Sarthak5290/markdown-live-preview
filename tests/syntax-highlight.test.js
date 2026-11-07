@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { highlightCode, MAX_HIGHLIGHT_CHARS } from '../src/syntax-highlight.js';
+import { highlightCode, MAX_HIGHLIGHT_CHARS } from '../src/preview/syntax-highlight.js';
 import { escapeHtml } from '../src/lib/html.js';
 
 describe('highlightCode', () => {

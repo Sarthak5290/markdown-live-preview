@@ -10,7 +10,7 @@ export function updateCssVersions() {
     const versions = new Map(styles.map((name, index) => [name,
         createHash('sha256').update(readFileSync(cssFiles[index])).digest('hex').slice(0, 12)
     ]));
-    for (const name of ['index.html', 'src/main.js']) {
+    for (const name of ['index.html', 'src/ui/theme.js']) {
         const path = new URL(name, root);
         const original = readFileSync(path, 'utf8');
         const updated = original.replace(/css\/([\w-]+\.css)\?v=[^'"\s]+/g,
