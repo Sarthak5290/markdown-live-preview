@@ -1,8 +1,12 @@
 const isShown = (element) => getComputedStyle(element).display !== 'none';
 
 // Outline panel: lists the preview's headings (those tagged with data-source-line)
-// and jumps to a heading in whichever panes are visible.
-export const setupOutline = ({ panel, toggle, output, preview, editorPane, editor, initiallyOpen, onOpenChange }) => {
+// and jumps to a heading in whichever panes are visible. On small screens it is a
+// drawer over the content (isOverlay), with a backdrop, and closes after a jump.
+export const setupOutline = ({
+    panel, toggle, backdrop, output, preview, editorPane, editor,
+    initiallyOpen, onOpenChange, isOverlay = () => false
+}) => {
     const list = panel.querySelector('#outline-list');
     let headings = [];
     let items = [];
@@ -66,6 +70,10 @@ export const setupOutline = ({ panel, toggle, output, preview, editorPane, edito
                 preview.scrollTo({ top: preview.scrollTop + offset - 8, behavior: 'smooth' });
             });
         }
+        // As a drawer it covers the content, so get out of the way after a jump.
+        if (isOverlay()) {
+            close();
+        }
     };
 
     // Rebuilds the list from the current preview; skipped while the panel is closed.
@@ -104,17 +112,26 @@ export const setupOutline = ({ panel, toggle, output, preview, editorPane, edito
 
     const setOpen = (open) => {
         panel.hidden = !open;
+        backdrop.hidden = !open;
         toggle.setAttribute('aria-pressed', String(open));
         refresh();
+    };
+
+    const close = () => {
+        setOpen(false);
+        onOpenChange(false);
     };
 
     toggle.addEventListener('click', () => {
         setOpen(panel.hidden);
         onOpenChange(!panel.hidden);
     });
-    panel.querySelector('#outline-close').addEventListener('click', () => {
-        setOpen(false);
-        onOpenChange(false);
+    panel.querySelector('#outline-close').addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !panel.hidden && isOverlay()) {
+            close();
+        }
     });
     preview.addEventListener('scroll', scheduleHighlight);
 

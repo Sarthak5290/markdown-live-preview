@@ -6,6 +6,7 @@
     <meta http-equiv="content-script-type" content="text/javascript">
     <meta http-equiv="content-style-type" content="text/css">
     <meta name="description" content="This is the online markdown editor with live preview.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#444444">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
@@ -32,7 +33,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" type="text/css" href="css/style.css?v=985a48460fdf">
+    <link rel="stylesheet" type="text/css" href="css/style.css?v=8f6834a5e29e">
     <link rel="icon" type="image/png" href="favicon.png">
     <script type="module" src="/src/main.js?v=1.13.0"></script>
     <title>Markdown Live Preview</title>
@@ -75,7 +76,7 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                 </a>
             </div>
-            <div>
+            <div id="outline-toggle">
                 <button type="button" id="outline-button" class="menu-icon" title="Outline" aria-label="Outline" aria-pressed="false">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                 </button>
@@ -112,6 +113,7 @@
         </nav>
     </header>
 
+    <div id="outline-backdrop" hidden></div>
     <aside id="outline-panel" aria-label="Outline" hidden>
         <div class="outline-header">
             <span>Outline</span>

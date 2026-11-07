@@ -21,6 +21,11 @@ const init = () => {
     const localStorageViewModeKey = 'view_mode';
     const localStorageOutlineKey = 'outline_open';
     const localStorageBeforeShareKey = 'before_share';
+    const localStorageViewModePhoneKey = 'view_mode_phone';
+
+    // Phones show one pane at a time; below laptop width the outline is a drawer.
+    const phoneQuery = window.matchMedia('(max-width: 767px)');
+    const drawerQuery = window.matchMedia('(max-width: 1199px)');
     const confirmationMessage = 'Are you sure you want to reset? Your changes will be lost.';
     let mermaidRenderTimer = null;
     let mermaidRenderVersion = 0;
@@ -411,25 +416,30 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     // ----- view mode (editor only / both / preview only) -----
 
-    let initViewMode = (mode) => {
+    // Phones and larger screens remember their own mode, so picking the preview
+    // on a phone does not turn off the side-by-side view on a laptop.
+    let initViewMode = () => {
         const container = document.querySelector('#container');
         const buttons = document.querySelectorAll('#view-modes [data-view]');
 
-        let applyViewMode = (next) => {
+        let applyViewMode = () => {
+            const mode = loadViewMode(phoneQuery.matches);
             container.classList.remove('view-editor', 'view-split', 'view-preview');
-            container.classList.add(`view-${next}`);
+            container.classList.add(`view-${mode}`);
             buttons.forEach((button) => {
-                button.setAttribute('aria-pressed', String(button.dataset.view === next));
+                button.setAttribute('aria-pressed', String(button.dataset.view === mode));
             });
         };
 
         buttons.forEach((button) => {
             button.addEventListener('click', () => {
-                applyViewMode(button.dataset.view);
-                saveViewMode(button.dataset.view);
+                saveViewMode(button.dataset.view, phoneQuery.matches);
+                applyViewMode();
             });
         });
-        applyViewMode(mode);
+        // Rotating a phone or resizing a window can cross the phone width.
+        phoneQuery.addEventListener('change', applyViewMode);
+        applyViewMode();
     };
 
     // ----- preview CSS loader (switch github-markdown css) -----
@@ -808,14 +818,18 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         Storehouse.setItem(localStorageNamespace, localStorageScrollBarKey, settings, expiredAt);
     };
 
-    let loadViewMode = () => {
-        let mode = Storehouse.getItem(localStorageNamespace, localStorageViewModeKey);
-        return mode === 'editor' || mode === 'preview' ? mode : 'split';
+    // Phones have no side-by-side mode: they default to the editor.
+    let loadViewMode = (phone) => {
+        let mode = Storehouse.getItem(localStorageNamespace, phone ? localStorageViewModePhoneKey : localStorageViewModeKey);
+        if (mode === 'editor' || mode === 'preview') {
+            return mode;
+        }
+        return phone ? 'editor' : 'split';
     };
 
-    let saveViewMode = (mode) => {
+    let saveViewMode = (mode, phone) => {
         let expiredAt = new Date(2099, 1, 1);
-        Storehouse.setItem(localStorageNamespace, localStorageViewModeKey, mode, expiredAt);
+        Storehouse.setItem(localStorageNamespace, phone ? localStorageViewModePhoneKey : localStorageViewModeKey, mode, expiredAt);
     };
 
     let loadOutlineOpen = () => {
@@ -863,20 +877,25 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
         let isDragging = false;
 
-        divider.addEventListener('mouseenter', () => {
+        // Pointer events, so the divider can be dragged with a mouse, a finger or a pen.
+        divider.addEventListener('pointerenter', () => {
             divider.classList.add('hover');
         });
 
-        divider.addEventListener('mouseleave', () => {
+        divider.addEventListener('pointerleave', () => {
             if (!isDragging) {
                 divider.classList.remove('hover');
             }
         });
 
-        divider.addEventListener('mousedown', () => {
+        divider.addEventListener('pointerdown', (e) => {
             isDragging = true;
+            // Keep receiving moves even when the pointer leaves the thin divider.
+            divider.setPointerCapture(e.pointerId);
             divider.classList.add('active');
             document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
         });
 
         divider.addEventListener('dblclick', () => {
@@ -889,9 +908,8 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             rightPane.style.width = halfWidth + 'px';
         });
 
-        document.addEventListener('mousemove', (e) => {
+        divider.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
-            document.body.style.userSelect = 'none';
             const containerRect = container.getBoundingClientRect();
             const totalWidth = containerRect.width;
             const offsetX = e.clientX - containerRect.left;
@@ -906,7 +924,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             lastLeftRatio = leftWidth / (totalWidth - dividerWidth);
         });
 
-        document.addEventListener('mouseup', () => {
+        const endDrag = () => {
             if (isDragging) {
                 isDragging = false;
                 divider.classList.remove('active');
@@ -914,7 +932,9 @@ This web site is using ${"`"}markedjs/marked${"`"}.
                 document.body.style.cursor = 'default';
                 document.body.style.userSelect = '';
             }
-        });
+        };
+        divider.addEventListener('pointerup', endDrag);
+        divider.addEventListener('pointercancel', endDrag);
 
         window.addEventListener('resize', () => {
             const containerRect = container.getBoundingClientRect();
@@ -933,6 +953,12 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     // ----- entry point -----
     let lastContent = loadLastContent();
     let editor = setupEditor();
+    // Narrower line numbers on phones leave more room for text.
+    let fitEditorToScreen = () => {
+        editor.updateOptions({ lineNumbersMinChars: phoneQuery.matches ? 3 : 5 });
+    };
+    fitEditorToScreen();
+    phoneQuery.addEventListener('change', fitEditorToScreen);
     if (typeof lastContent === 'string') {
         presetValue(lastContent);
     } else {
@@ -946,12 +972,18 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     outline = setupOutline({
         panel: document.querySelector('#outline-panel'),
         toggle: document.querySelector('#outline-button'),
+        backdrop: document.querySelector('#outline-backdrop'),
         output: document.querySelector('#output'),
         preview: document.querySelector('#preview'),
         editorPane: document.querySelector('#edit'),
         editor,
-        initiallyOpen: loadOutlineOpen(),
+        isOverlay: () => drawerQuery.matches,
+        // As a drawer it would cover the content, so it starts closed there.
+        initiallyOpen: loadOutlineOpen() && !drawerQuery.matches,
         onOpenChange: (open) => {
+            if (drawerQuery.matches) {
+                return; // Drawer use doesn't change the laptop preference.
+            }
             saveOutlineOpen(open);
             // The panel changes the panes' space; the divider recalculates on resize.
             window.dispatchEvent(new Event('resize'));
@@ -965,7 +997,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     let scrollBarSettings = loadScrollBarSettings() || false;
     initScrollBarSync(scrollBarSettings);
-    initViewMode(loadViewMode());
+    initViewMode();
 
     // initialize theme (dark/light)
     let themeSettings = loadThemeSettings();

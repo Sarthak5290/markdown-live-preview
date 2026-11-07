@@ -17,6 +17,8 @@ body {
   grid-template-columns: 48px auto minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
   height: 100vh;
+  /* Mobile browsers: fit between the address bar and the bottom of the screen. */
+  height: 100dvh;
 }
 
 h1, h2, h3, h4, h5, h6, p {
@@ -121,6 +123,11 @@ header a.menu-icon:visited {
   white-space: nowrap;
 }
 
+/* Keeps the hidden checkbox inside its icon, so it never sticks out of the icon row. */
+.menu-toggle {
+  position: relative;
+}
+
 .menu-toggle input:focus-visible + label {
   outline: 2px solid #58a6ff;
 }
@@ -146,6 +153,7 @@ header a.menu-icon:visited {
 
 footer {
   grid-column: 3;
+  box-sizing: border-box;
   padding: 8px;
   bottom: 0;
   left: 0;
@@ -241,6 +249,7 @@ footer {
   #preview-search-anchor,
   #outline-panel,
   #notice,
+  #outline-backdrop,
   .code-copy-button {
     display: none !important;
   }
@@ -474,10 +483,26 @@ footer {
 }
 
 .split-divider {
+  position: relative;
   width: 5px;
   background: #ccc;
   cursor: col-resize;
-  z-index: 1;
+  /* Above the editor's scrollbar (z-index 11), which sits right next to the divider. */
+  z-index: 12;
+  /* Dragging with a finger must not scroll or zoom the page. */
+  touch-action: none;
+}
+
+/* A wider invisible grab area, so the thin divider is easy to hit with a finger. */
+@media (pointer: coarse) {
+  .split-divider::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -8px;
+    right: -8px;
+  }
 }
 
 .split-divider.hover {
@@ -541,6 +566,9 @@ footer {
   position: absolute;
   top: 8px;
   right: 12px;
+  /* Shrinks to fit narrow panes instead of overflowing them (padding included). */
+  box-sizing: border-box;
+  max-width: calc(100% - 24px);
   display: flex;
   align-items: center;
   gap: 2px;
@@ -555,7 +583,9 @@ footer {
 }
 
 .preview-search input {
+  flex: 1 1 180px;
   width: 180px;
+  min-width: 0;
   padding: 4px 6px;
   border: 1px solid #d0d7de;
   border-radius: 4px;
@@ -870,6 +900,8 @@ footer {
   position: fixed;
   top: 12px;
   left: 50%;
+  /* Width limits include padding, so long messages still fit a phone screen. */
+  box-sizing: border-box;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -919,4 +951,135 @@ footer {
 
 [data-theme="dark"] #notice button:hover {
   background: #444c56;
+}
+
+/* ===== Responsive layout =====
+   Laptop (1200px and up): the layout above, unchanged.
+   Tablet (768-1199px): icon column on the left, panes side by side, outline as a drawer.
+   Phone (up to 767px): icon row on top, one pane at a time, outline as a drawer. */
+
+/* Bigger tap targets on touch screens. */
+@media (pointer: coarse) {
+  .menu-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* The backdrop only exists for the drawer on smaller screens. */
+#outline-backdrop {
+  display: none;
+}
+
+@media (max-width: 1199px) {
+  /* Outline as a drawer over the content, so the panes keep their width. */
+  #outline-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 48px;
+    z-index: 60;
+    width: min(85vw, 300px);
+    box-shadow: 4px 0 24px rgba(31, 35, 40, 0.25);
+  }
+
+  #outline-backdrop:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(0, 0, 0, 0.35);
+  }
+}
+
+@media (max-width: 767px) {
+  body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* Icon row across the top; it scrolls sideways if the icons don't fit. */
+  header {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 4px 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  header::-webkit-scrollbar {
+    display: none;
+  }
+
+  #menu-items {
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    width: max-content;
+  }
+
+  #view-modes {
+    flex-direction: row;
+    padding: 0 4px;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  /* Most used first: logo, editor/preview, outline, then the rest in their usual order. */
+  #menu-items > * {
+    order: 3;
+  }
+
+  #menu-items > #app-title {
+    order: 0;
+    margin: 0 4px 0 0;
+  }
+
+  #menu-items > #view-modes {
+    order: 1;
+  }
+
+  #menu-items > #outline-toggle {
+    order: 2;
+  }
+
+  /* One pane at a time, so no side-by-side mode and nothing to sync. */
+  #view-modes [data-view="split"],
+  #sync-button {
+    display: none;
+  }
+
+  #container {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  footer {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  /* The drawer opens below the icon row. */
+  #outline-panel {
+    top: 48px;
+    left: 0;
+  }
+
+  #preview-wrapper {
+    padding: 8px 12px;
+  }
+
+  #notice {
+    top: 56px;
+    max-width: calc(100vw - 24px);
+    flex-wrap: wrap;
+  }
+
+  .preview-search {
+    left: 8px;
+    right: 8px;
+  }
 }
