@@ -1,0 +1,59 @@
+/* The split between editor and preview: divider, and the view modes (screen only). */
+
+.split-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.editor-pane,
+.preview-pane {
+  height: 100%;
+}
+
+.split-divider {
+  position: relative;
+  width: 5px;
+  background: #ccc;
+  cursor: col-resize;
+  /* Above the editor's scrollbar (z-index 11), which sits right next to the divider. */
+  z-index: 12;
+  /* Dragging with a finger must not scroll or zoom the page. */
+  touch-action: none;
+}
+
+/* A wider invisible grab area, so the thin divider is easy to hit with a finger. */
+@media (pointer: coarse) {
+  .split-divider::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -8px;
+    right: -8px;
+  }
+}
+
+.split-divider.hover {
+  background: #999;
+}
+
+.split-divider.active {
+  background: #666;
+}
+
+/* Screen only, so Export PDF always prints the preview. */
+@media screen {
+  #container.view-editor #preview,
+  #container.view-editor #split-divider,
+  #container.view-preview #edit,
+  #container.view-preview #split-divider {
+    display: none;
+  }
+
+  /* !important beats the pixel widths the divider's drag code sets on the panes. */
+  #container.view-editor #edit,
+  #container.view-preview #preview {
+    width: 100% !important;
+  }
+}

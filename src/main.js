@@ -1,4 +1,15 @@
 // App startup: creates the editor and the preview, then connects every feature.
+// Styles first, so they come before the editor's own CSS, as before.
+import './styles/base.css';
+import './styles/sidebar.css';
+import './styles/layout.css';
+import './styles/preview.css';
+import './styles/highlight.css';
+import './styles/search.css';
+import './styles/outline.css';
+import './styles/notice.css';
+import './styles/responsive.css';
+import './styles/print.css';
 import defaultDocument from './default-document.md?raw';
 import { loadContent, saveContent, loadOutlineOpen, saveOutlineOpen } from './storage.js';
 import { createEditor, setEditorTheme } from './editor.js';

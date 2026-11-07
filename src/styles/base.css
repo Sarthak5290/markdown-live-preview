@@ -1,0 +1,132 @@
+/* Page structure: body grid, typography, footer, the editor and preview panes, dark page colours. */
+
+html, body {
+  color: #333;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 1em;
+  line-height: 1.5em;
+  background-color: #fff;
+  overscroll-behavior-y: none;
+}
+
+/* Sidebar on the left (full height); editor, preview and footer on the right. */
+body {
+  display: grid;
+  /* Sidebar, outline panel (collapses to nothing while hidden), editor + preview. */
+  grid-template-columns: 48px auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100vh;
+  /* Mobile browsers: fit between the address bar and the bottom of the screen. */
+  height: 100dvh;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+p {
+  margin: 1em;
+}
+
+a:link,
+a:visited,
+a:hover
+a:active {
+  text-decoration: none;
+}
+
+img {
+  border: none;
+}
+
+footer {
+  grid-column: 3;
+  box-sizing: border-box;
+  padding: 8px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  color: #fff;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+#container {
+  grid-column: 3;
+  flex-grow: 1;
+  overflow: hidden;
+  width: 100%;
+  margin: 0 auto;
+  background-color: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  display: flex;
+}
+
+#editor-wrapper {
+  height: 100%;
+}
+
+#editor {
+  height: 100%;
+}
+
+#preview-wrapper {
+  padding: 8px 16px 16px 16px;
+}
+
+.column {
+  width: 50%;
+  padding: 0;
+  margin: 0;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+#preview.column {
+  overflow-y: scroll;
+  white-space: normal;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] html, [data-theme="dark"] body {
+  background-color: #212830;
+  color: #e6edf3;
+}
+
+[data-theme="dark"] header {
+  background-color: #333;
+  color: #e6edf3;
+}
+
+[data-theme="dark"] header a:link, [data-theme="dark"] header a:hover, [data-theme="dark"] header a:visited {
+  color: #e6edf3;
+}
+
+[data-theme="dark"] #container {
+  background-color: #212830;
+  border-bottom: 1px solid #1f2d3a;
+}
+
+[data-theme="dark"] .split-divider {
+  background: #30363d;
+}
+
+[data-theme="dark"] .split-divider.hover {
+  background: #444c56;
+}
+
+[data-theme="dark"] .split-divider.active {
+  background: #768390;
+}
+
+[data-theme="dark"] footer {
+  background-color: #333;
+}

@@ -1,0 +1,144 @@
+/* Tablet and phone layouts. */
+
+/* ===== Responsive layout =====
+   Laptop (1200px and up): the layout above, unchanged.
+   Tablet (768-1199px): icon column on the left, panes side by side, outline as a drawer.
+   Phone (up to 767px): icon row on top, one pane at a time, outline as a drawer. */
+
+/* Bigger tap targets on touch screens. */
+@media (pointer: coarse) {
+  .menu-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* The backdrop only exists for the drawer on smaller screens. */
+/* The search icon is for phones, tablets and touch screens, which have no Ctrl+F. */
+.touch-only {
+  display: none;
+}
+
+@media (max-width: 1199px), (pointer: coarse) {
+  .touch-only {
+    display: block;
+  }
+}
+
+#outline-backdrop {
+  display: none;
+}
+
+@media (max-width: 1199px) {
+  /* Outline as a drawer over the content, so the panes keep their width. */
+  #outline-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 48px;
+    z-index: 60;
+    width: min(85vw, 300px);
+    box-shadow: 4px 0 24px rgba(31, 35, 40, 0.25);
+  }
+
+  #outline-backdrop:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(0, 0, 0, 0.35);
+  }
+}
+
+@media (max-width: 767px) {
+  body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* Icon row across the top; it scrolls sideways if the icons don't fit. */
+  header {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 4px 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  header::-webkit-scrollbar {
+    display: none;
+  }
+
+  #menu-items {
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    width: max-content;
+  }
+
+  #view-modes {
+    flex-direction: row;
+    padding: 0 4px;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  /* Most used first: logo, editor/preview, outline, then the rest in their usual order. */
+  #menu-items > * {
+    order: 3;
+  }
+
+  #menu-items > #app-title {
+    order: 0;
+    margin: 0 4px 0 0;
+  }
+
+  #menu-items > #view-modes {
+    order: 1;
+  }
+
+  #menu-items > #outline-toggle,
+  #menu-items > #search-toggle {
+    order: 2;
+  }
+
+  /* One pane at a time, so no side-by-side mode and nothing to sync. */
+  #view-modes [data-view="split"],
+  #sync-button {
+    display: none;
+  }
+
+  #container {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  footer {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  /* The drawer opens below the icon row. */
+  #outline-panel {
+    top: 48px;
+    left: 0;
+  }
+
+  #preview-wrapper {
+    padding: 8px 12px;
+  }
+
+  #notice {
+    top: 56px;
+    max-width: calc(100vw - 24px);
+    flex-wrap: wrap;
+  }
+
+  .preview-search {
+    left: 8px;
+    right: 8px;
+  }
+}

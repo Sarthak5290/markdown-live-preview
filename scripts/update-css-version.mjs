@@ -3,7 +3,8 @@ import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = new URL('../', import.meta.url);
-const styles = ['style.css', 'github-markdown-light.css', 'github-markdown-dark_dimmed.css'];
+// Only the theme stylesheets live in public/ (swapped at runtime); the app's own CSS is bundled by Vite.
+const styles = ['github-markdown-light.css', 'github-markdown-dark_dimmed.css'];
 export const cssFiles = styles.map(name => fileURLToPath(new URL(`public/css/${name}`, root)));
 
 export function updateCssVersions() {

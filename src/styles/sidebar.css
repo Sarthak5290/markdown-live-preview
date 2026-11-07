@@ -1,0 +1,123 @@
+/* The icon sidebar: icons, tooltips, toggles and the view-mode group. */
+
+/* Icon-only sidebar: one column of icons, each with a tooltip (title). */
+header {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  padding: 8px 0;
+  overflow-y: auto;
+  background-color: #444;
+  color: #fff;
+}
+
+#menu-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+#app-title {
+  margin-bottom: 8px;
+}
+
+.menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+header a.menu-icon:link,
+header a.menu-icon:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.menu-icon:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.menu-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#app-title .menu-icon svg {
+  width: 26px;
+}
+
+#github img {
+  display: block;
+  width: 18px;
+}
+
+#open-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Checkboxes stay in the page for the scripts and keyboard, but only their icon shows. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Keeps the hidden checkbox inside its icon, so it never sticks out of the icon row. */
+.menu-toggle {
+  position: relative;
+}
+
+.menu-toggle input:focus-visible + label {
+  outline: 2px solid #58a6ff;
+}
+
+#sync-scroll-checkbox:checked + label {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Dark mode shows a moon when off and a sun when on; Copy and Share flash a check mark. */
+.icon-sun,
+.icon-check,
+#theme-checkbox:checked + label .icon-moon,
+#copy-button.copied .icon-copy,
+#share-button.copied .icon-share {
+  display: none;
+}
+
+#theme-checkbox:checked + label .icon-sun,
+#copy-button.copied .icon-check,
+#share-button.copied .icon-check {
+  display: block;
+}
+
+/* View modes: editor only / both / preview only (sidebar icons) */
+#view-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#view-modes .menu-icon[aria-pressed="true"] {
+  background-color: rgba(255, 255, 255, 0.22);
+}

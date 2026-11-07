@@ -1,0 +1,103 @@
+/* Extras inside the preview: Mermaid diagrams, error notes, and code-block copy buttons. */
+
+.markdown-body .mermaid {
+  overflow-x: auto;
+  padding: 16px;
+  text-align: center;
+}
+
+.markdown-body .mermaid svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.markdown-body .mermaid-error,
+.markdown-body .json-error {
+  color: #cf222e;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+[data-theme="dark"] .markdown-body .mermaid-error,
+[data-theme="dark"] .markdown-body .json-error {
+  color: #ff7b72;
+}
+
+.markdown-body .json-error {
+  font-size: 85%;
+  margin-bottom: 8px;
+}
+
+/* Copy button on each code block (shown on hover, like GitHub) */
+.code-block {
+  position: relative;
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background: #f6f8fa;
+  color: #57606a;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.code-block:hover .code-copy-button,
+.code-copy-button:focus-visible,
+.code-copy-button.copied {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .code-copy-button {
+    opacity: 1;
+  }
+}
+
+.code-copy-button:hover {
+  background: #eaeef2;
+  color: #24292f;
+}
+
+.code-copy-button .icon-check,
+.code-copy-button.copied .icon-copy {
+  display: none;
+}
+
+.code-copy-button.copied .icon-check {
+  display: block;
+}
+
+.code-copy-button.copied {
+  border-color: #1a7f37;
+  color: #1a7f37;
+}
+
+[data-theme="dark"] .code-copy-button {
+  border-color: #444c56;
+  background: #2d333b;
+  color: #adbac7;
+}
+
+[data-theme="dark"] .code-copy-button:hover {
+  background: #373e47;
+  color: #cdd9e5;
+}
+
+[data-theme="dark"] .code-copy-button.copied {
+  border-color: #57ab5a;
+  color: #57ab5a;
+}
