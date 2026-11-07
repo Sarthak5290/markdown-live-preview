@@ -26,3 +26,10 @@ serve-dist:
 build-serve:
 	npm run build-and-serve
 
+.PHONY: test
+test:
+	npm test
+
+.PHONY: lint
+lint:
+	npm run lint

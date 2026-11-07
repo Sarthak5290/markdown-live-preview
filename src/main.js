@@ -4,10 +4,12 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import mermaid from 'mermaid';
 import { highlightCode } from './syntax-highlight.js';
-import { detectJson } from './json-preview.js';
+import { detectJson } from './lib/json-preview.js';
+import { escapeHtml } from './lib/html.js';
+import { markHeadingLines } from './lib/headings.js';
 import { setupPreviewSearch } from './preview-search.js';
 import { setupOutline } from './outline.js';
-import { SHARE_PREFIX, LONG_LINK, MAX_LINK, encodeShare, decodeShare } from './share.js';
+import { SHARE_PREFIX, LONG_LINK, MAX_LINK, encodeShare, decodeShare } from './lib/share.js';
 import { registerSW } from 'virtual:pwa-register';
 
 const init = () => {
@@ -110,7 +112,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 `;
 
     self.MonacoEnvironment = {
-        getWorker(_, label) {
+        getWorker() {
             return new Proxy({}, { get: () => () => { } });
         }
     }
@@ -161,15 +163,6 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         });
 
         return editor;
-    };
-
-    let escapeHtml = (value) => {
-        return value
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
     };
 
     // Returns null when the language is unknown or the code is too large.
@@ -330,22 +323,6 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     let renderer = createMarkedRenderer();
     let previewSearch = null;
     let outline = null;
-
-    // Saves each top-level heading's line number on its token. Tokens are found
-    // in order in the source, which also skips text marked drops (link definitions).
-    let markHeadingLines = (source, tokens) => {
-        let cursor = 0;
-        for (const token of tokens) {
-            const at = source.indexOf(token.raw, cursor);
-            if (at === -1) {
-                continue;
-            }
-            cursor = at + token.raw.length;
-            if (token.type === 'heading') {
-                token.sourceLine = source.slice(0, at).split('\n').length;
-            }
-        }
-    };
 
     // Render markdown text as html
     let convert = (markdown) => {
@@ -600,7 +577,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         let text;
         try {
             text = await decodeShare(data);
-        } catch (error) {
+        } catch {
             showNotice('This share link is broken or incomplete.');
             return;
         }
@@ -669,7 +646,6 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         renderMermaidDiagrams(printTheme).then(() => {
             window.print();
         }).catch((error) => {
-            // eslint-disable-next-line no-console
             console.error('Failed to prepare PDF export', error);
             if (currentTheme === 'dark') {
                 cleanupPrintThemeListener();
@@ -700,7 +676,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             let content;
             try {
                 content = await file.text();
-            } catch (error) {
+            } catch {
                 window.alert('Unable to read this file. Please try again.');
                 return;
             } finally {
@@ -793,7 +769,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         let expiredAt = new Date(2099, 1, 1);
         try {
             Storehouse.setItem(localStorageNamespace, localStorageKey, content, expiredAt);
-        } catch (e) {
+        } catch {
             // Large files can exceed the browser's storage limit; the preview still works.
         }
     };
@@ -811,7 +787,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
                 const raw = localStorage.getItem('com.markdownlivepreview_theme');
                 if (raw === 'dark') return true;
                 if (raw === 'light') return false;
-            } catch (e) {
+            } catch {
                 // ignore
             }
         }
@@ -849,7 +825,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         let expiredAt = new Date(2099, 1, 1);
         try {
             Storehouse.setItem(localStorageNamespace, localStorageBeforeShareKey, text, expiredAt);
-        } catch (e) {
+        } catch {
             // Storage full: the shared document still opens.
         }
     };
@@ -868,7 +844,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         Storehouse.setItem(localStorageNamespace, localStorageThemeKey, settings, expiredAt);
         try {
             localStorage.setItem('com.markdownlivepreview_theme', settings ? 'dark' : 'light');
-        } catch (e) {
+        } catch {
             // ignore storage errors
         }
     };

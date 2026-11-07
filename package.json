@@ -4,11 +4,12 @@
   "description": "Markdown and JSON editor with live preview: code highlighting, search, outline, share links, offline support and a responsive layout.",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "update:css-version": "node scripts/update-css-version.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "update:css-version": "node scripts/update-css-version.mjs",
     "serve-dist": "http-server dist -p 5001 -c-1",
     "build-and-serve": "npm run build && npm run serve-dist"
   },
@@ -30,9 +31,13 @@
   },
   "homepage": "https://github.com/tanabe/markdown-live-preview#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
     "http-server": "^14.1.1",
     "vite": "^6.4.5",
-    "vite-plugin-pwa": "^2.0.0"
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^3.2.7"
   },
   "dependencies": {
     "dompurify": "^3.4.17",
