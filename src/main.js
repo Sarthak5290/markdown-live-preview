@@ -7,6 +7,7 @@ import { highlightCode } from './syntax-highlight.js';
 import { detectJson } from './json-preview.js';
 import { setupPreviewSearch } from './preview-search.js';
 import { setupOutline } from './outline.js';
+import { SHARE_PREFIX, LONG_LINK, MAX_LINK, encodeShare, decodeShare } from './share.js';
 
 const init = () => {
     let hasEdited = false;
@@ -18,6 +19,7 @@ const init = () => {
     const localStorageThemeKey = 'theme_settings';
     const localStorageViewModeKey = 'view_mode';
     const localStorageOutlineKey = 'outline_open';
+    const localStorageBeforeShareKey = 'before_share';
     const confirmationMessage = 'Are you sure you want to reset? Your changes will be lost.';
     let mermaidRenderTimer = null;
     let mermaidRenderVersion = 0;
@@ -512,15 +514,117 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     };
 
     // Swaps the Copy icon for a check mark for a second.
-    let notifyCopied = () => {
-        let button = document.querySelector("#copy-button");
+    let flashCopied = (button, title) => {
         let link = button.querySelector("a");
         button.classList.add("copied");
         link.title = "Copied!";
         setTimeout(() => {
             button.classList.remove("copied");
-            link.title = "Copy";
+            link.title = title;
         }, 1000);
+    };
+
+    let notifyCopied = () => {
+        flashCopied(document.querySelector("#copy-button"), "Copy");
+    };
+
+    // ----- notice (short messages at the top of the page) -----
+
+    let noticeTimer = null;
+
+    // Messages without buttons close after 4 seconds; with buttons, they stay until one is clicked.
+    let showNotice = (message, actions = []) => {
+        const notice = document.querySelector('#notice');
+        clearTimeout(noticeTimer);
+        const text = document.createElement('span');
+        text.textContent = message;
+        const buttons = actions.map(({ label, onClick }) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = label;
+            button.addEventListener('click', () => {
+                notice.hidden = true;
+                onClick();
+            });
+            return button;
+        });
+        notice.replaceChildren(text, ...buttons);
+        notice.hidden = false;
+        if (actions.length === 0) {
+            noticeTimer = setTimeout(() => {
+                notice.hidden = true;
+            }, 4000);
+        }
+    };
+
+    // ----- share by link -----
+
+    let setupShareButton = (editor) => {
+        const button = document.querySelector('#share-button');
+        button.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const text = editor.getValue();
+            if (!text.trim()) {
+                showNotice('Nothing to share yet.');
+                return;
+            }
+            const url = `${location.origin}${location.pathname}${SHARE_PREFIX}${await encodeShare(text)}`;
+            if (url.length > MAX_LINK) {
+                showNotice('This document is too large to share as a link.');
+                return;
+            }
+            copyToClipboard(url, () => {
+                flashCopied(button, 'Copy share link');
+                showNotice(url.length > LONG_LINK
+                    ? `Link copied, but it's long (${url.length.toLocaleString()} characters); some chat apps may cut it off.`
+                    : 'Share link copied.');
+            }, () => {
+                showNotice("Couldn't copy the link.");
+            });
+        });
+    };
+
+    // Opens a "#share=" link: the shared text replaces the editor's, and the
+    // user's own text is kept so it can be restored.
+    let openSharedLink = async () => {
+        if (!location.hash.startsWith(SHARE_PREFIX)) {
+            return;
+        }
+        const data = location.hash.slice(SHARE_PREFIX.length);
+        // Drop the data from the address so a reload does not import it again.
+        history.replaceState(null, '', location.pathname + location.search);
+
+        let text;
+        try {
+            text = await decodeShare(data);
+        } catch (error) {
+            showNotice('This share link is broken or incomplete.');
+            return;
+        }
+
+        const own = editor.getValue();
+        if (own === text) {
+            showNotice('This shared document is already open.');
+            return;
+        }
+        // Keep the oldest backup, so opening a second link never replaces the user's own text.
+        if (typeof loadBeforeShare() !== 'string') {
+            saveBeforeShare(own);
+        }
+        presetValue(text);
+        showNotice('Opened a shared document. Your own text was saved.', [
+            {
+                label: 'Restore my text',
+                onClick: () => {
+                    const backup = loadBeforeShare();
+                    deleteBeforeShare();
+                    if (typeof backup === 'string') {
+                        presetValue(backup);
+                    }
+                }
+            },
+            { label: 'Keep this', onClick: deleteBeforeShare }
+        ]);
     };
 
     // ----- export preview -----
@@ -717,6 +821,23 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         return Storehouse.getItem(localStorageNamespace, localStorageOutlineKey) === true;
     };
 
+    let loadBeforeShare = () => {
+        return Storehouse.getItem(localStorageNamespace, localStorageBeforeShareKey);
+    };
+
+    let saveBeforeShare = (text) => {
+        let expiredAt = new Date(2099, 1, 1);
+        try {
+            Storehouse.setItem(localStorageNamespace, localStorageBeforeShareKey, text, expiredAt);
+        } catch (e) {
+            // Storage full: the shared document still opens.
+        }
+    };
+
+    let deleteBeforeShare = () => {
+        Storehouse.deleteItem(localStorageNamespace, localStorageBeforeShareKey);
+    };
+
     let saveOutlineOpen = (open) => {
         let expiredAt = new Date(2099, 1, 1);
         Storehouse.setItem(localStorageNamespace, localStorageOutlineKey, open, expiredAt);
@@ -838,6 +959,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     setupResetButton();
     setupCopyButton(editor);
     setupCodeCopyButtons();
+    setupShareButton(editor);
     setupExportButton();
 
     let scrollBarSettings = loadScrollBarSettings() || false;
@@ -855,6 +977,9 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     initThemeToggle(themeSettings);
 
     setupDivider();
+
+    openSharedLink();
+    window.addEventListener('hashchange', openSharedLink);
 };
 
 window.addEventListener("load", () => {
