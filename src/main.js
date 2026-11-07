@@ -3,6 +3,8 @@ import * as monaco from 'monaco-editor';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import mermaid from 'mermaid';
+import { highlightCode } from './syntax-highlight.js';
+import { detectJson } from './json-preview.js';
 
 const init = () => {
     let hasEdited = false;
@@ -158,17 +160,45 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             .replace(/'/g, '&#39;');
     };
 
+    // Returns null when the language is unknown or the code is too large.
+    let renderHighlightedCode = (code, lang) => {
+        const highlighted = highlightCode(code, lang);
+        if (highlighted === null) {
+            return null;
+        }
+        return `<pre><code class="hljs language-${escapeHtml(lang)}">${highlighted}\n</code></pre>\n`;
+    };
+
+    // Renders JSON found outside a code block, with a note when it is invalid.
+    let renderJsonBlock = ({ valid, text, error }) => {
+        const code = renderHighlightedCode(text, 'json')
+            ?? `<pre><code class="language-json">${escapeHtml(text)}\n</code></pre>\n`;
+        if (valid) {
+            return code;
+        }
+        return `<div class="json-error">Invalid JSON: ${escapeHtml(error)}</div>\n${code}`;
+    };
+
     let createMarkedRenderer = () => {
         const renderer = new marked.Renderer();
         const renderCode = renderer.code.bind(renderer);
+        const renderParagraph = renderer.paragraph.bind(renderer);
 
         renderer.code = (token) => {
             const lang = (token.lang || '').match(/^\S*/)?.[0].toLowerCase();
-            if (lang !== 'mermaid') {
-                return renderCode(token);
+            if (lang === 'mermaid') {
+                return `<pre class="mermaid">${escapeHtml(token.text)}</pre>\n`;
             }
 
-            return `<pre class="mermaid">${escapeHtml(token.text)}</pre>\n`;
+            return renderHighlightedCode(token.text.replace(/\n$/, ''), lang) ?? renderCode(token);
+        };
+
+        renderer.paragraph = (token) => {
+            // marked also calls this for loose text that is already HTML-escaped;
+            // that text cannot be checked as JSON.
+            const alreadyEscaped = token.tokens?.length === 1 && token.tokens[0].escaped;
+            const json = alreadyEscaped ? null : detectJson(token.text);
+            return json ? renderJsonBlock(json) : renderParagraph(token);
         };
 
         return renderer;
@@ -257,7 +287,10 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             mangle: false,
             renderer
         };
-        let html = marked.parse(markdown, options);
+        // A document that is entirely JSON (such as an opened .json file) skips
+        // Markdown parsing, so blank lines or indentation inside it still work.
+        let json = detectJson(markdown);
+        let html = json ? renderJsonBlock(json) : marked.parse(markdown, options);
         let sanitized = DOMPurify.sanitize(html);
         document.querySelector('#output').innerHTML = sanitized;
         scheduleMermaidRender();
@@ -511,7 +544,11 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     let saveLastContent = (content) => {
         let expiredAt = new Date(2099, 1, 1);
-        Storehouse.setItem(localStorageNamespace, localStorageKey, content, expiredAt);
+        try {
+            Storehouse.setItem(localStorageNamespace, localStorageKey, content, expiredAt);
+        } catch (e) {
+            // Large files can exceed the browser's storage limit; the preview still works.
+        }
     };
 
     let loadScrollBarSettings = () => {
