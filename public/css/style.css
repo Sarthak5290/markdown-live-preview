@@ -13,7 +13,7 @@ html, body {
 /* Sidebar on the left (full height); editor, preview and footer on the right. */
 body {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
   height: 100vh;
 }
@@ -40,103 +40,104 @@ img {
   border: none;
 }
 
+/* Icon-only sidebar: one column of icons, each with a tooltip (title). */
 header {
   grid-row: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 8px;
+  padding: 8px 0;
   overflow-y: auto;
   background-color: #444;
-  font-size: 13px;
-  color: #fff;
-}
-
-header a:link, header a:hover, header a:visited, header a:active {
   color: #fff;
 }
 
 #menu-items {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-/* Each menu entry is a full-width row that highlights on hover. */
-#menu-items > div {
-    border-radius: 4px;
-}
-
-#menu-items > div:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-#menu-items > div > a,
-#open-button,
-.menu-toggle label {
-    display: block;
-    padding: 6px 8px;
-    text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 #app-title {
-    margin-bottom: 8px;
-    font-weight: bold;
-    line-height: 1.3;
+  margin-bottom: 8px;
 }
 
-#menu-items > #app-title:hover {
-    background: none;
+.menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
-#open-button {
-    width: 100%;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
+header a.menu-icon:link,
+header a.menu-icon:visited {
+  color: inherit;
+  text-decoration: none;
 }
 
-#open-button:disabled {
-    opacity: 0.6;
-    cursor: wait;
+.menu-icon:hover {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
-.menu-toggle {
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+.menu-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.menu-toggle label {
-    flex-grow: 1;
-    padding-left: 4px;
-    cursor: pointer;
-}
-
-header input[type="checkbox"] {
-    margin: 0;
-}
-
-#github {
-    padding: 0 8px;
+#app-title .menu-icon svg {
+  width: 26px;
 }
 
 #github img {
   display: block;
-  width: 16px;
+  width: 18px;
 }
 
-#github a {
+#open-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Checkboxes stay in the page for the scripts and keyboard, but only their icon shows. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.menu-toggle input:focus-visible + label {
+  outline: 2px solid #58a6ff;
+}
+
+#sync-scroll-checkbox:checked + label {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Dark mode shows a moon when off and a sun when on; Copy flashes a check mark. */
+.icon-sun,
+.icon-check,
+#theme-checkbox:checked + label .icon-moon,
+#copy-button.copied .icon-copy {
+  display: none;
+}
+
+#theme-checkbox:checked + label .icon-sun,
+#copy-button.copied .icon-check {
   display: block;
-  width: 16px;
 }
 
 footer {

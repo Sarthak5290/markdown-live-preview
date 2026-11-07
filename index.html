@@ -30,7 +30,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" type="text/css" href="css/style.css?v=a0f24c1c0a14">
+    <link rel="stylesheet" type="text/css" href="css/style.css?v=cb1519aca6fd">
     <link rel="icon" type="image/png" href="favicon.png">
     <script type="module" src="/src/main.js?v=1.13.0"></script>
     <title>Markdown Live Preview</title>
@@ -39,21 +39,53 @@
   <body>
 
     <header>
-        <div id="menu-items">
-            <div id="app-title"><a href="/">Markdown Live Preview</a></div>
-            <div><button type="button" id="open-button">Open</button></div>
+        <nav id="menu-items" aria-label="Menu">
+            <div id="app-title">
+                <a href="/" class="menu-icon" title="Markdown Live Preview" aria-label="Markdown Live Preview">
+                    <svg class="logo" viewBox="0 0 208 128" aria-hidden="true"><rect width="198" height="118" x="5" y="5" ry="10" fill="none" stroke="currentColor" stroke-width="10"/><path fill="currentColor" stroke="none" d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>
+                </a>
+            </div>
+            <div>
+                <button type="button" id="open-button" class="menu-icon" title="Open file" aria-label="Open file">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </button>
+            </div>
             <input type="file" id="open-file-input" accept=".md,.markdown,text/markdown,.json,application/json" hidden>
-            <div id="copy-button"><a href="#">Copy</a></div>
-            <div id="export-button"><a href="#">Export PDF</a></div>
-            <div id="reset-button"><a href="#">Reset</a></div>
+            <div id="copy-button">
+                <a href="#" class="menu-icon" title="Copy" aria-label="Copy">
+                    <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                </a>
+            </div>
+            <div id="export-button">
+                <a href="#" class="menu-icon" title="Export PDF" aria-label="Export PDF">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                </a>
+            </div>
+            <div id="reset-button">
+                <a href="#" class="menu-icon" title="Reset" aria-label="Reset">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                </a>
+            </div>
             <div id="sync-button" class="menu-toggle">
-              <input type="checkbox" id="sync-scroll-checkbox"><label for="sync-scroll-checkbox">Sync scroll</label>
+                <input type="checkbox" id="sync-scroll-checkbox" class="visually-hidden">
+                <label for="sync-scroll-checkbox" class="menu-icon" title="Sync scroll">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    <span class="visually-hidden">Sync scroll</span>
+                </label>
             </div>
             <div id="theme-button" class="menu-toggle">
-              <input type="checkbox" id="theme-checkbox"><label for="theme-checkbox">Dark mode</label>
+                <input type="checkbox" id="theme-checkbox" class="visually-hidden">
+                <label for="theme-checkbox" class="menu-icon" title="Dark mode">
+                    <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span class="visually-hidden">Dark mode</span>
+                </label>
             </div>
-        </div>
-        <div id="github"><a href="https://github.com/tanabe/markdown-live-preview"><img src="image/GitHub-Mark-Light-32px.webp"></a></div>
+            <div id="github">
+                <a href="https://github.com/tanabe/markdown-live-preview" class="menu-icon" title="GitHub" aria-label="GitHub"><img src="image/GitHub-Mark-Light-32px.webp" alt=""></a>
+            </div>
+        </nav>
     </header>
 
     <div id="container" class="split-container">

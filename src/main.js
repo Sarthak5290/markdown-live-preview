@@ -448,12 +448,16 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         );
     };
 
+    // Swaps the Copy icon for a check mark for a second.
     let notifyCopied = () => {
-        let labelElement = document.querySelector("#copy-button a");
-        labelElement.innerHTML = "Copied!";
+        let button = document.querySelector("#copy-button");
+        let link = button.querySelector("a");
+        button.classList.add("copied");
+        link.title = "Copied!";
         setTimeout(() => {
-            labelElement.innerHTML = "Copy";
-        }, 1000)
+            button.classList.remove("copied");
+            link.title = "Copy";
+        }, 1000);
     };
 
     // ----- export preview -----
