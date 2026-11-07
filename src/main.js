@@ -197,6 +197,17 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         });
     };
 
+    // Web links open in a new tab so the editor stays open; "#" links still scroll in place.
+    let openLinksInNewTab = (output) => {
+        output.querySelectorAll('a[href]').forEach((link) => {
+            if (link.getAttribute('href').startsWith('#') || !/^https?:$/.test(link.protocol)) {
+                return;
+            }
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+        });
+    };
+
     let createMarkedRenderer = () => {
         const renderer = new marked.Renderer();
         const renderCode = renderer.code.bind(renderer);
@@ -314,6 +325,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         let output = document.querySelector('#output');
         output.innerHTML = sanitized;
         addCopyButtons(output);
+        openLinksInNewTab(output);
         scheduleMermaidRender();
         previewSearch?.refresh();
     };
