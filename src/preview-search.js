@@ -50,7 +50,6 @@ const createRange = ({ nodes, starts }, start, end) => {
 // Search box for the rendered preview. `scroller` is the scrolling pane that
 // holds the search controls; `output` is the rendered content to search.
 export const setupPreviewSearch = ({ output, scroller }) => {
-    const button = scroller.querySelector('#preview-search-button');
     const box = scroller.querySelector('#preview-search');
     const input = scroller.querySelector('#preview-search-input');
     const count = scroller.querySelector('#preview-search-count');
@@ -174,7 +173,6 @@ export const setupPreviewSearch = ({ output, scroller }) => {
             input.value = selected;
         }
         box.hidden = false;
-        button.hidden = true;
         input.focus();
         input.select();
         search();
@@ -187,10 +185,8 @@ export const setupPreviewSearch = ({ output, scroller }) => {
         current = -1;
         clearHighlights();
         box.hidden = true;
-        button.hidden = false;
     };
 
-    button.addEventListener('click', open);
     scroller.querySelector('#preview-search-close').addEventListener('click', close);
     scroller.querySelector('#preview-search-prev').addEventListener('click', () => move(-1));
     scroller.querySelector('#preview-search-next').addEventListener('click', () => move(1));
